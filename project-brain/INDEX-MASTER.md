@@ -2,7 +2,7 @@
 <!-- type: INDEX -->
 <!-- updated: 2026-02-17 -->
 <!-- project: Coder Brain -->
-<!-- total-files: 14 -->
+<!-- total-files: 18 -->
 <!-- capabilities: code-generation, strategy-implementation, testing, validation, refactoring -->
 <!-- input-types: implement, test, fix, refactor -->
 <!-- output-types: RESULT, LEARN-candidate -->
@@ -189,6 +189,50 @@ _None yet._
 - **Key decisions:** None — reference. Always use Abstract API in strategies. Compute ALL indicators in populate_indicators(), never in populate_entry/exit_trend().
 - **Interface:** N/A (reference). Primary indicator lookup for code generation.
 - **Known issues:** ta-lib Windows installation needs pre-built binaries. BBANDS default timeperiod=5 is unusually short (use 20). SAR whipsaws in sideways markets.
+
+### LEARN-008
+- **Type:** LEARN
+- **File:** learnings/LEARN-008_vectorbt-backtesting-engine-reference.md
+- **Tags:** vectorbt, backtesting, vectorized, trading, indicators, portfolio, parameter-optimization, signal-generation, prover
+- **Links:** LEARN-001, SPEC-001, RULE-003
+- **Backlinks:** _(none)_
+- **Summary:** Comprehensive VectorBT reference for the two-phase pipeline (VectorBT screening → Freqtrade validation). Covers: vectorized vs event-driven comparison, signal generation (MA crossovers, RSI, combining with &/|, SignalFactory chain mode), Portfolio.from_signals() full parameter reference (size_type 4 options, direction 3 options, sl_stop/tp_stop/ts_stop, fees/slippage), all built-in indicators with signatures (MA, RSI, BBANDS, MACD, ATR, STOCH, OBV), IndicatorFactory for custom indicators, run_combs() for parameter arrays (4851 combos from 99 windows), results analysis (stats, trades, Sharpe, heatmaps), parameter optimization workflow (idxmax for best params), data handling (YFData, CCXTData), VectorBT-to-Freqtrade signal conversion (boolean → DataFrame .loc[]), performance tips (Numba @njit, avoid pandas in Numba), PRO vs open-source feature table.
+- **Key decisions:** Open-source VectorBT sufficient for Phase 1 screening. Signal conversion is manual. CPCV likely requires external library.
+- **Interface:** N/A (reference)
+- **Known issues:** No automated signal-to-Freqtrade converter. CPCV not native. PRO scope unclear (paywall).
+
+### LEARN-009
+- **Type:** LEARN
+- **File:** learnings/LEARN-009_optuna-hyperparameter-optimization.md
+- **Tags:** optuna, hyperparameter, optimization, bayesian, TPE, pruning, freqtrade, trading
+- **Links:** LEARN-001, LEARN-006, SPEC-001, RULE-003
+- **Backlinks:** _(none)_
+- **Summary:** Complete Optuna reference for strategy optimization. Covers: core concepts (study/trial/objective), Trial suggest API (suggest_int/float/categorical with step/log/conditional params, enqueue_trial), 8 samplers compared (TPESampler default, CmaEsSampler for continuous, NSGAIIISampler = Freqtrade default, AutoSampler), 6 pruners (MedianPruner recommended default with n_startup_trials/n_warmup_steps), storage options (SQLite single-process, PostgreSQL/JournalFileBackend for parallel), visualization (10 plot types), Freqtrade hyperopt integration (CLI, loss functions, strategy Parameter types, standalone vs built-in comparison table), best practices (10x params minimum trials, timeout safety, multi-objective Pareto), 6 common pitfalls (search space too wide, step/log conflict, SQLite concurrency, overfitting).
+- **Key decisions:** Freqtrade hyperopt for quick sweeps, standalone Optuna for pruning/walk-forward/persistence. TPESampler with seed for reproducibility.
+- **Interface:** N/A (reference)
+- **Known issues:** Freqtrade hyperopt doesn't expose pruning. Walk-forward requires custom objective.
+
+### LEARN-010
+- **Type:** LEARN
+- **File:** learnings/LEARN-010_pytest-advanced-patterns.md
+- **Tags:** pytest, testing, fixtures, parametrize, mocking, hypothesis, property-testing, benchmark, dataframe
+- **Links:** CODE-002, RULE-003, SPEC-001
+- **Backlinks:** _(none)_
+- **Summary:** Advanced pytest patterns extending CODE-002 scaffolding. Covers: fixtures (5 scopes, autouse, parametrized fixtures, fixture factories with cleanup, request.param), parametrize (basic, IDs, stacking for combinations, indirect to fixtures, marks on params), mocking (monkeypatch for env/config, MagicMock with spec/side_effect, patch decorator/context, when-to-use comparison table), markers (skip/skipif/xfail, custom registration in pyproject.toml, -m filtering), conftest hierarchy patterns (plugin hooks, pytest_addoption, shared fixtures), property-based testing with Hypothesis (@given, core strategies, hypothesis.extra.pandas for OHLCV DataFrames with assume() for constraints, settings/example), pytest-benchmark (basic, pedantic mode, CLI options), DataFrame testing patterns (schema assertions, pytest.approx with rel/abs/nan_ok, pd.testing.assert_frame_equal, NaN propagation testing).
+- **Key decisions:** monkeypatch for simple replacements, unittest.mock for call tracking. Hypothesis adds ~10s per DataFrame test.
+- **Interface:** N/A (reference)
+- **Known issues:** Hypothesis + pytest-benchmark don't compose well. hypothesis.extra.pandas doesn't enforce OHLC constraints.
+
+### LEARN-011
+- **Type:** LEARN
+- **File:** learnings/LEARN-011_ccxt-unified-api-reference.md
+- **Tags:** ccxt, exchange-api, trading, unified-api, freqtrade, python, market-data, orders, error-handling, async
+- **Links:** LEARN-001, LEARN-003, SPEC-001
+- **Backlinks:** _(none)_
+- **Summary:** Comprehensive CCXT reference for the Coder brain. Covers: exchange instantiation (sync/async, all config options, sandbox/testnet, load_markets), market structure (symbol format for spot/futures/options, market object fields, precision vs limits), public API (fetchTicker, fetchOrderBook, fetchOHLCV with return structures, timeframe strings, pagination for historical data, timestamp helpers), private API (fetchBalance, createOrder with market/limit/stop/TP/SL examples, derivatives leverage/margin, order lifecycle, order management), async vs sync (when to use, multi-exchange pattern, 3 pitfalls), error handling (full exception hierarchy, retry pattern with backoff, retryability table — NetworkError=retry, ExchangeError=don't), exchange quirks (Binance/Bybit/OKX/Kraken comparison table, specific gotchas per exchange), Freqtrade integration (what FT handles vs strategy author, DataProvider not raw CCXT, signal columns, exchange config JSON), common recipes (OHLCV-to-pandas, market filtering), 10 key gotchas.
+- **Key decisions:** Sync for Freqtrade strategies (FT handles async). Implement own retry logic (CCXT internal retry broken). triggerPrice/stopLossPrice/takeProfitPrice as unified stop/TP params.
+- **Interface:** N/A (reference)
+- **Known issues:** CCXT v4.x point-in-time Feb 2026. Fee info "experimental". Binance testnet URLs changed 2025.
 
 ---
 

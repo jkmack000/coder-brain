@@ -113,7 +113,7 @@ ALLOWED_IMPORTS = {
 - `/brain-status` — File counts, orphans, index health
 
 ## Rules
-Session hygiene, fat-index discipline, and ingestion dedup are enforced via `.claude/rules/`. These load automatically every session.
+Session hygiene, fat-index discipline, ingestion dedup, and deposit-as-you-go are enforced via `.claude/rules/`. These load automatically every session.
 
 ## Inter-Brain Protocol
 

@@ -1,0 +1,45 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[Brain] Project Brain detected. CLAUDE.md loaded INIT.md. Check SESSION-HANDOFF.md and INDEX-MASTER.md before starting work.'"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[Brain] Context compaction imminent. Write SESSION-HANDOFF.md NOW — capture current state, uncommitted decisions, and what to reload after compaction.'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import os,sys,time,json; data=json.load(sys.stdin); sa=data.get('stop_hook_active',False); path='project-brain/SESSION-HANDOFF.md'; ok=sa or (os.path.exists(path) and (time.time()-os.path.getmtime(path))<1800); sys.exit(0) if ok else (print('SESSION-HANDOFF.md not written in the last 30 min. Run /brain-handoff before ending.',file=sys.stderr) or sys.exit(0))\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import json,sys; data=json.load(sys.stdin); tool=data.get('tool_name',''); path=(data.get('tool_input',{}).get('file_path','') if isinstance(data.get('tool_input'),dict) else '').replace(chr(92),'/'); print('[Brain] You modified a brain file. Update its fat index entry in INDEX-MASTER.md.') if 'project-brain/' in path and path.endswith('.md') and 'INDEX-MASTER' not in path and 'SESSION-HANDOFF' not in path and 'templates/' not in path else None\""
+          }
+        ]
+      }
+    ]
+  }
+}

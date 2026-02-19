@@ -1,1 +1,36 @@
 __pycache__/
+*.pyc
+
+# Secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.*
+secrets.*
+*_secret*
+*.token
+
+# API keys and config with sensitive data
+config.local.*
+*.credentials.json
+service-account*.json
+
+# OS junk
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+*.egg-info/
+dist/
+build/
+.eggs/

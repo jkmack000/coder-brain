@@ -27,7 +27,8 @@ import textwrap
 from pathlib import Path
 
 # Ensure UTF-8 output on Windows (avoids charmap encoding errors)
-if sys.stdout.encoding != "utf-8":
+# Only when running as CLI — wrapping stdout breaks MCP stdio transport
+if __name__ == "__main__" and sys.stdout.encoding != "utf-8":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
@@ -171,12 +172,138 @@ def check_content_duplicate(brain_root: Path, new_file_path: Path) -> list[str]:
     return [path for path, info in manifest.items() if info["hash"] == new_hash]
 
 
+def _expand_abbreviated_id(short_id: str) -> str:
+    """Expand compressed ID to full form: L044→LEARN-044, S001→SPEC-001, etc."""
+    PREFIX_MAP = {"L": "LEARN", "S": "SPEC", "C": "CODE", "R": "RULE", "G": "LOG"}
+    if not short_id or short_id[0] not in PREFIX_MAP:
+        return short_id
+    match = re.match(r"^([LSCRG])(\d+)$", short_id)
+    if match:
+        return f"{PREFIX_MAP[match.group(1)]}-{match.group(2)}"
+    return short_id
+
+
+def _derive_file_path(file_id: str) -> str:
+    """Derive file path from full ID (e.g., LEARN-044 → learnings/LEARN-044_*.md).
+
+    Returns the directory prefix + ID prefix for matching (exact filename unknown).
+    """
+    for type_prefix, info in FILE_TYPES.items():
+        if file_id.startswith(type_prefix):
+            return f"{info['dir']}/{file_id}"
+    return file_id
+
+
+def _expand_link_ids(links_str: str) -> str:
+    """Expand abbreviated link IDs in a comma-separated string."""
+    if not links_str or links_str == "∅":
+        return ""
+    # Strip parenthetical annotations like (37←hub)
+    links_str = re.sub(r"\([^)]*\)", "", links_str).strip()
+    parts = [p.strip() for p in links_str.split(",") if p.strip() and p.strip() != "∅"]
+    return ", ".join(_expand_abbreviated_id(p) for p in parts)
+
+
+def _parse_compressed_entry(line: str) -> dict | None:
+    """Parse a single compressed pipe-delimited entry.
+
+    Format: ID|tags|→outlinks|←inlinks|summary|d:decisions|i:interface|!issues
+    """
+    # Must start with a valid abbreviated ID pattern
+    if not re.match(r"^[LSCRG]\d{3}", line):
+        return None
+
+    parts = line.split("|")
+    if len(parts) < 5:
+        return None
+
+    short_id = parts[0].strip()
+    full_id = _expand_abbreviated_id(short_id)
+    tags = parts[1].strip() if len(parts) > 1 else ""
+    links_raw = parts[2].strip().lstrip("→") if len(parts) > 2 else ""
+    backlinks_raw = parts[3].strip().lstrip("←") if len(parts) > 3 else ""
+
+    # Remaining fields after backlinks: find summary (first field not starting
+    # with a known prefix) and tagged fields (d:, i:, !, v:)
+    summary = ""
+    extra_fields = parts[4:]
+    for i, part in enumerate(extra_fields):
+        part = part.strip()
+        if not part:
+            continue
+        if part.startswith(("d:", "i:", "!", "v:")):
+            continue
+        # First non-prefixed field is the summary
+        summary = part
+        break
+
+    entry = {
+        "id": full_id,
+        "tags": tags,
+        "links": _expand_link_ids(links_raw),
+        "backlinks": _expand_link_ids(backlinks_raw),
+        "summary": summary,
+        "type": full_id.split("-")[0] if "-" in full_id else "",
+        "file": _derive_file_path(full_id),
+        "raw": line,
+    }
+
+    # Parse tagged fields from all remaining parts
+    for part in extra_fields:
+        part = part.strip()
+        if part.startswith("d:"):
+            entry["decisions"] = part[2:]
+        elif part.startswith("i:"):
+            entry["interface"] = part[2:]
+        elif part.startswith("!"):
+            entry["known_issues"] = part[1:]
+        elif part.startswith("v:"):
+            entry["vitality"] = part[2:]
+
+    return entry
+
+
+def _detect_index_format(index_text: str) -> str:
+    """Detect whether index is compressed-v1 or legacy markdown."""
+    if "<!-- format: compressed-v1" in index_text:
+        return "compressed"
+    # Also detect by content pattern
+    if re.search(r"^[LSCRG]\d{3}\|", index_text, re.MULTILINE):
+        return "compressed"
+    return "markdown"
+
+
 def parse_index_entries(index_text: str) -> list[dict]:
-    """Parse fat index entries from an index markdown file.
+    """Parse fat index entries from an index file (compressed or markdown).
 
     Returns a list of dicts with keys: id, type, file, tags, links, summary,
     interface, known_issues, and raw (the full entry text).
+    Supports both compressed-v1 (pipe-delimited) and legacy markdown formats.
     """
+    fmt = _detect_index_format(index_text)
+
+    if fmt == "compressed":
+        return _parse_compressed_entries(index_text)
+    return _parse_markdown_entries(index_text)
+
+
+def _parse_compressed_entries(index_text: str) -> list[dict]:
+    """Parse compressed pipe-delimited fat index entries."""
+    entries = []
+    for line in index_text.split("\n"):
+        line = line.strip()
+        if not line or line.startswith("#") or line.startswith("<!--") or line.startswith("---"):
+            continue
+        if line.startswith("@SUB:") or line.startswith("~") or line.startswith("|"):
+            continue
+        entry = _parse_compressed_entry(line)
+        if entry:
+            entries.append(entry)
+    return entries
+
+
+def _parse_markdown_entries(index_text: str) -> list[dict]:
+    """Parse legacy markdown fat index entries (### heading + **Field:** lines)."""
     entries = []
     # Split on ### headings which denote individual entries
     chunks = re.split(r"^### ", index_text, flags=re.MULTILINE)
@@ -664,15 +791,12 @@ def cmd_deposit(args):
             return
 
     print(f"\n--- Fat Index Entry (auto-generated, edit as needed) ---")
-    fat_entry = textwrap.dedent(f"""\
-    ### {file_id}
-    - **Type:** {file_type}
-    - **File:** {FILE_TYPES[file_type]['dir']}/{filename}
-    - **Tags:** {tags}
-    - **Links:** _none yet_
-    - **Summary:** [TODO: Write a 1-2 sentence summary that answers "do I need to open this file?"]
-    - **Known issues:** None open
-    """)
+    # Generate compressed-v1 format entry
+    abbrev_prefix = {"SPEC": "S", "CODE": "C", "RULE": "R", "LEARN": "L", "LOG": "G"}
+    short_prefix = abbrev_prefix.get(file_type, file_type[0])
+    num = file_id.split("-")[1]
+    short_id = f"{short_prefix}{num}"
+    fat_entry = f"{short_id}|{tags}|→∅|←∅|[TODO: summary answering 'do I need this file?']|!none\n"
     print(fat_entry)
 
     # Append to INDEX-MASTER.md under the correct section
@@ -874,10 +998,15 @@ def cmd_status(args):
     print(f"\nIndex entries: {len(entries)}")
 
     # Check for orphans (files without index entries)
+    # Build set of indexed file prefixes to handle both exact paths and
+    # compressed-v1 derived paths (e.g., "learnings/LEARN-001" matches
+    # "learnings/LEARN-001_freqtrade-istrategy-technical-reference.md")
     indexed_files = set()
+    indexed_prefixes = set()
     for e in entries:
         if "file" in e:
             indexed_files.add(e["file"])
+            indexed_prefixes.add(e["file"])
 
     orphans = []
     for file_type, info in FILE_TYPES.items():
@@ -886,8 +1015,12 @@ def cmd_status(args):
         type_dir = brain_root / info["dir"]
         for f in type_dir.glob(f"{file_type}-*.md"):
             relative = f"{info['dir']}/{f.name}"
-            if relative not in indexed_files:
-                orphans.append(relative)
+            if relative in indexed_files:
+                continue
+            # Check prefix match for compressed-v1 derived paths
+            if any(relative.startswith(p) for p in indexed_prefixes):
+                continue
+            orphans.append(relative)
 
     if orphans:
         print(f"\nOrphans (files without index entries): {len(orphans)}")
@@ -897,11 +1030,17 @@ def cmd_status(args):
         print("\nNo orphans detected. All files are indexed.")
 
     # Check for stale entries (index entries pointing to missing files)
+    # For compressed-v1, derived paths are prefixes (e.g., "learnings/LEARN-001")
+    # so we glob for matches instead of checking exact path existence.
     stale = []
     for e in entries:
         if "file" in e:
             file_path = brain_root / e["file"]
-            if not file_path.exists():
+            if file_path.exists():
+                continue
+            # Try glob match for compressed-v1 derived paths (prefix + wildcard)
+            matches = list(file_path.parent.glob(f"{file_path.name}*")) if file_path.parent.exists() else []
+            if not matches:
                 stale.append(f"{e['id']} -> {e['file']}")
 
     if stale:

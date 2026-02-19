@@ -1,0 +1,11 @@
+[project]
+name = "coder-brain"
+version = "0.1.0"
+description = "Coder Brain — LLM persistent memory system"
+requires-python = ">=3.10"
+dependencies = [
+    "rank-bm25>=0.2.2",
+]
+
+[project.scripts]
+brain = "project-brain.brain:main"

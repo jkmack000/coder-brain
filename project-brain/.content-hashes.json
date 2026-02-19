@@ -1,0 +1,97 @@
+{
+  "code/CODE-001_istrategy-template.md": {
+    "hash": "819867a60ff52a24e94bba43fb2bb9ef84abc5d9fbca50000538af1c515a3c3d",
+    "id": "CODE-001",
+    "updated": "2026-02-17"
+  },
+  "code/CODE-002_test-scaffolding.md": {
+    "hash": "a154615e1741bbf2786f48197c8fcd1661ae767e997713ad0c9ea48514dade1b",
+    "id": "CODE-002",
+    "updated": "2026-02-17"
+  },
+  "code/CODE-003_sample-validated-strategy.md": {
+    "hash": "d547b7c9932ce4a2fee2af56b6ca8d1003fbf5b80e74f64b45f9781bdd16cdd8",
+    "id": "CODE-003",
+    "updated": "2026-02-17"
+  },
+  "learnings/LEARN-001_freqtrade-istrategy-technical-reference.md": {
+    "hash": "09cbf075482cf53673cbaed6f092cb49ea8afd810b773e8a70538d97619950e1",
+    "id": "LEARN-001",
+    "updated": "2026-02-17"
+  },
+  "learnings/LEARN-002_llm-code-generation-patterns.md": {
+    "hash": "7b7c7262f70de57f180ae9e4e6cae6a6ad338e353562856b0769b27ca81bbbf9",
+    "id": "LEARN-002",
+    "updated": "2026-02-17"
+  },
+  "learnings/LEARN-003_freqtrade-bot-configuration.md": {
+    "hash": "09006db72c3b0403c0d0a9c10b6e7d4b5c25230913735c2df827a0acc44fbafc",
+    "id": "LEARN-003",
+    "updated": "2026-02-17"
+  },
+  "learnings/LEARN-004_freqtrade-bot-lifecycle.md": {
+    "hash": "85cf6a3d71c8bb2e70030661f2a4a60bcaea20988f8d7c4c50349970d62d415b",
+    "id": "LEARN-004",
+    "updated": "2026-02-17"
+  },
+  "learnings/LEARN-005_freqtrade-data-handling.md": {
+    "hash": "b16f6e3e985639c6bff40959982e35c8f7973e757f763d9905d711244fafd7f4",
+    "id": "LEARN-005",
+    "updated": "2026-02-17"
+  },
+  "learnings/LEARN-006_freqtrade-backtesting-cli.md": {
+    "hash": "3ff814b7fbfa2bd87e5ce3a2fca7948eb97c68cc883dd886413803d42b74838d",
+    "id": "LEARN-006",
+    "updated": "2026-02-17"
+  },
+  "learnings/LEARN-007_talib-indicator-reference.md": {
+    "hash": "518edf49880a37669bd88ba4fec8b23ff4060e3ae8cf47cdd8db212896f6b562",
+    "id": "LEARN-007",
+    "updated": "2026-02-17"
+  },
+  "learnings/LEARN-008_vectorbt-backtesting-engine-reference.md": {
+    "hash": "5c304aa5691ed99a426abb45816b6dde0079a1955f1e700a1feb1ffab110495b",
+    "id": "LEARN-008",
+    "updated": "2026-02-18"
+  },
+  "learnings/LEARN-009_optuna-hyperparameter-optimization.md": {
+    "hash": "0eb7565913acdb4cd0a0a22f76ecb6d6bfcc17d62731551b21385f1ccc7dbda1",
+    "id": "LEARN-009",
+    "updated": "2026-02-18"
+  },
+  "learnings/LEARN-010_pytest-advanced-patterns.md": {
+    "hash": "4ee0313a30e91686317a7a46d111f2b55bf0c5bd705be37023bf70675cfc2c7f",
+    "id": "LEARN-010",
+    "updated": "2026-02-18"
+  },
+  "learnings/LEARN-011_ccxt-unified-api-reference.md": {
+    "hash": "285964c7c5cec61b58af37eb8c01368c1e9e1276e61240e17efccd83b41ed865",
+    "id": "LEARN-011",
+    "updated": "2026-02-18"
+  },
+  "logs/LOG-002_project-timeline.md": {
+    "hash": "498f11f9dc2fe2ec7ce0ad596b295918e5581aea719fb0c7467a78664674367e",
+    "id": "LOG-002",
+    "updated": "2026-02-18"
+  },
+  "rules/RULE-001_import-whitelist.md": {
+    "hash": "2934e4976e030d5649e7a45b2517ae54398972f6143a3420fd2b9a435d51e56a",
+    "id": "RULE-001",
+    "updated": "2026-02-17"
+  },
+  "rules/RULE-002_code-style-conventions.md": {
+    "hash": "e952096a216726b0a4c331c8578229a0bf6b648aea1a64fd65abb7057a985356",
+    "id": "RULE-002",
+    "updated": "2026-02-17"
+  },
+  "rules/RULE-003_testing-requirements.md": {
+    "hash": "db5e521e809d2086734abf0260427394d7484169442753608547db2910c631af",
+    "id": "RULE-003",
+    "updated": "2026-02-17"
+  },
+  "specs/SPEC-001_coder-brain-architecture.md": {
+    "hash": "389ac71278ac9371b1590c3faa5cbed3a70b7e7d57df25d5f42938f0e63f2d62",
+    "id": "SPEC-001",
+    "updated": "2026-02-17"
+  }
+}

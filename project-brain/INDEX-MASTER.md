@@ -1,6 +1,6 @@
 # INDEX-MASTER — Coder Brain
 <!-- type: INDEX -->
-<!-- updated: 2026-02-18 -->
+<!-- updated: 2026-02-19 -->
 <!-- project: Coder Brain -->
 <!-- total-files: 19 -->
 <!-- capabilities: code-generation, strategy-implementation, testing, validation, refactoring -->
@@ -8,7 +8,9 @@
 <!-- output-types: RESULT, LEARN-candidate -->
 <!-- token-budget: 1500 -->
 <!-- domain: freqtrade, ccxt, ta-lib, vectorbt, pytest, python -->
-<!-- Load this file at the start of every Claude Code session. -->
+<!-- format: compressed-v1 (LEARN-046) -->
+<!-- entry: ID|tags|→outlinks|←inlinks|summary|d:decisions|i:interface|!issues -->
+<!-- abbrev: L=LEARN S=SPEC C=CODE R=RULE G=LOG →=links ←=backlinks ∅=none d:=decisions i:=interface !=issues -->
 
 ## How to Use This Index
 1. Read this file first in every session.
@@ -24,230 +26,59 @@ _None yet._
 
 ## SPEC Files
 
-### SPEC-001
-- **Type:** SPEC
-- **File:** specs/SPEC-001_coder-brain-architecture.md
-- **Tags:** architecture, coder-brain, prover, coding-agent, python, freqtrade, code-generation, validation
-- **Links:** LEARN-001, LEARN-002, CODE-001, CODE-002, CODE-003, RULE-001, RULE-002, RULE-003
-- **Backlinks:** LEARN-001, LEARN-002, LEARN-008, LEARN-009, LEARN-010, LEARN-011
-- **Summary:** Architecture spec for the Coder brain — a specialist Python coding agent in the Prover multi-brain system. Defines: position in agent chain (receives CONTEXT-PACK from orchestrator, produces RESULT with validation evidence), three-tier knowledge hierarchy (brain files > Context7 > GitHub), complete Phase 1 file inventory (14 files: 7 LEARNs, 3 CODEs, 3 RULEs, 1 SPEC), write pipeline (brain search → Context7 → few-shot → SCoT → template-fill/full-gen → tests), 3-stage validation pipeline (AST → imports → pytest/dry-run, max 3 rounds), security model (strict whitelist for strategies, relaxed for non-strategy, 30s/512MB limits), inter-brain CONTEXT-PACK/RESULT protocol with YAML format, and 3-phase ingestion roadmap (Phase 1 complete: Freqtrade seed; Phase 2 next: CCXT, VectorBT, Optuna, pytest advanced; Phase 3: error patterns from production).
-- **Key decisions:** Template-fill for IStrategy, full generation for non-strategy. Knowledge-first over guess-and-check. Max 3 iteration rounds. Whitelist-only imports.
-- **Interface:** Receives CONTEXT-PACK (task_type, acceptance criteria). Returns RESULT (files, validation, discoveries).
-- **Known issues:** 6 open questions (inter-brain protocol details, CCXT async/sync, short selling, multi-TF, VectorBT template, exchange scope). Phase 2 not started. ta-lib Windows install problematic.
+S001|architecture,coder-brain,prover,coding-agent,python,freqtrade,code-generation,validation|→L001,L002,C001,C002,C003,R001,R002,R003|←L001,L002,L008,L009,L010,L011|Architecture spec for the Coder brain — specialist Python coding agent in Prover multi-brain system. Position in agent chain (receives CONTEXT-PACK, produces RESULT with validation evidence), three-tier knowledge hierarchy (brain>Context7>GitHub), Phase 1 file inventory (14 files), write pipeline (brain search→Context7→few-shot→SCoT→template-fill/full-gen→tests), 3-stage validation (AST→imports→pytest, max 3 rounds), security model (strict whitelist strategies, relaxed non-strategy, 30s/512MB), inter-brain CONTEXT-PACK/RESULT protocol (YAML), 3-phase ingestion roadmap.|d:template-fill for IStrategy, full-gen for non-strategy; knowledge-first>guess-and-check; max 3 iterations; whitelist-only imports|i:receives CONTEXT-PACK (task_type, acceptance criteria). Returns RESULT (files, validation, discoveries)|!6 open Qs (protocol details, CCXT async/sync, short selling, multi-TF, VectorBT template, exchange scope). Phase 2 not started. ta-lib Windows problematic.
 
 ---
 
 ## CODE Files
 
-### CODE-001
-- **Type:** CODE
-- **File:** code/CODE-001_istrategy-template.md
-- **Tags:** freqtrade, IStrategy, template, code-generation, strategy, python
-- **Links:** LEARN-001, LEARN-007, RULE-001
-- **Backlinks:** CODE-002, CODE-003, RULE-001, RULE-002, RULE-003, SPEC-001
-- **Summary:** IStrategy template with fill slots for code generation. Fixed structure (imports, class, attributes, order_types) with 12 marked fill slots (STRATEGY_NAME, TIMEFRAME, ROI_TABLE, STOPLOSS, TRAILING_STOP, STARTUP_CANDLE_COUNT, INDICATORS, ENTRY_CONDITIONS, EXIT_CONDITIONS, HYPEROPT_PARAMETERS, INFORMATIVE_PAIRS, ADDITIONAL_IMPORTS). Includes fill slot reference table with required/optional and examples, entry/exit condition pattern library (EMA crossover, RSI filter, ADX gate, BB bounce, MACD histogram, candlestick patterns), and 7 usage rules (never modify structure, whitelist imports, economic thesis required, volume guard mandatory).
-- **Key decisions:** Template-fill only — agent fills slots, never modifies structure. Volume > 0 guard mandatory. Economic thesis mandatory.
-- **Interface:** Input: fill slot values from task spec. Output: complete IStrategy .py file.
-- **Known issues:** Long-only template. Short strategies need enter_short/exit_short columns.
+C001|freqtrade,IStrategy,template,code-generation,strategy,python|→L001,L007,R001|←C002,C003,R001,R002,R003,S001|IStrategy template with 12 fill slots (STRATEGY_NAME, TIMEFRAME, ROI_TABLE, STOPLOSS, TRAILING_STOP, STARTUP_CANDLE_COUNT, INDICATORS, ENTRY_CONDITIONS, EXIT_CONDITIONS, HYPEROPT_PARAMETERS, INFORMATIVE_PAIRS, ADDITIONAL_IMPORTS). Fill slot reference table, entry/exit condition pattern library (EMA crossover, RSI filter, ADX gate, BB bounce, MACD histogram, candlestick), 7 usage rules.|d:template-fill only — agent fills slots, never modifies structure; volume>0 mandatory; economic thesis mandatory|i:input: fill slot values from task spec. Output: complete IStrategy .py file|!long-only template. Short strategies need enter_short/exit_short.
 
-### CODE-002
-- **Type:** CODE
-- **File:** code/CODE-002_test-scaffolding.md
-- **Tags:** testing, pytest, conftest, fixtures, strategy-tests, freqtrade, python
-- **Links:** LEARN-001, CODE-001, RULE-003
-- **Backlinks:** LEARN-010, RULE-003, SPEC-001
-- **Summary:** Reusable test scaffolding for strategy validation. conftest.py with 5 fixtures (ohlcv_dataframe 500 rows seed 42, flat_dataframe, zero_volume_dataframe, mock_metadata, mock_dataprovider). 8 test patterns: strategy attributes, populate_indicators runs, entry signals binary, exit signals binary, DataFrame shape preserved, no entry on zero volume, flat market handling, startup_candle_count sufficiency. Optional property-based tests with hypothesis (stoploss negative, DataFrame length invariant). Usage: replace strategy_class fixture, run pytest -v.
-- **Key decisions:** Seed 42 for deterministic tests. 500 rows covers most indicator warmup periods. Property tests optional (add 10s per test).
-- **Interface:** Input: strategy class. Output: test results (pass/fail per pattern).
-- **Known issues:** Mock DataProvider doesn't simulate real informative data. Hypothesis adds latency.
+C002|testing,pytest,conftest,fixtures,strategy-tests,freqtrade,python|→L001,C001,R003|←L010,R003,S001|Reusable test scaffolding. conftest.py: 5 fixtures (ohlcv_dataframe 500 rows seed 42, flat_dataframe, zero_volume_dataframe, mock_metadata, mock_dataprovider). 8 test patterns: attributes, populate_indicators, entry/exit signals binary, shape preserved, no entry zero volume, flat market, startup_candle_count. Optional hypothesis property tests.|d:seed 42 deterministic; 500 rows covers most warmup; property tests optional (+10s)|i:input: strategy class. Output: pass/fail per pattern|!mock DataProvider doesn't simulate real informative data. Hypothesis adds latency.
 
-### CODE-003
-- **Type:** CODE
-- **File:** code/CODE-003_sample-validated-strategy.md
-- **Tags:** freqtrade, strategy, example, validated, EMA-crossover, RSI, python
-- **Links:** CODE-001, LEARN-001, LEARN-007, RULE-001
-- **Backlinks:** SPEC-001
-- **Summary:** Known-working EMACrossoverRSI strategy as few-shot example. Entry: fast EMA(9) crosses above slow EMA(21) AND price > EMA(50) AND RSI < 70 AND ADX > 20 AND volume > 0. Exit: EMA crossover down OR RSI > 80. Includes trailing stop Mode 4 (static until +3% offset, then trail at -2%), hyperopt parameters (buy_rsi_max, sell_rsi_min), Bollinger Bands computed for reference. Passes all 7 CODE-002 mandatory tests. Demonstrates 8 patterns: EMA crossover, RSI filter, trend strength gate, trend direction filter, volume guard, hyperopt parameter, trailing stop, multi-output indicator.
-- **Key decisions:** Demonstration only — not profitable. Simple enough for few-shot prompting. Mode 4 trailing as recommended default.
-- **Interface:** N/A (example). Used as few-shot input for code generation.
-- **Known issues:** Long-only. No informative pairs. No custom callbacks.
+C003|freqtrade,strategy,example,validated,EMA-crossover,RSI,python|→C001,L001,L007,R001|←S001|Known-working EMACrossoverRSI as few-shot example. Entry: EMA(9) crosses above EMA(21) AND price>EMA(50) AND RSI<70 AND ADX>20 AND volume>0. Exit: EMA crossover down OR RSI>80. Trailing stop Mode 4, hyperopt params, passes all 7 CODE-002 tests. Demonstrates 8 patterns.|d:demonstration only — not profitable; simple enough for few-shot; Mode 4 trailing as default|i:N/A (example). Used as few-shot input for code generation|!long-only. No informative pairs. No custom callbacks.
 
 ---
 
 ## RULE Files
 
-### RULE-001
-- **Type:** RULE
-- **File:** rules/RULE-001_import-whitelist.md
-- **Tags:** security, imports, whitelist, validation, strategy, python, guardrails
-- **Links:** LEARN-002, CODE-001
-- **Backlinks:** CODE-001, CODE-003, SPEC-001
-- **Summary:** Import whitelist for generated code — the primary security boundary. Two tiers: STRICT (strategy files) allows only safe stdlib subset + numpy/pandas + talib + freqtrade + ccxt + pytest; RELAXED (non-strategy) additionally allows pathlib, json, csv, os, yaml, vectorbt, optuna, hypothesis. BLOCKED always: network (requests/urllib), code execution (exec/eval), serialization (pickle), system access (subprocess). Includes AST-based validation function (validate_imports). 5 rules: whitelist-never-blacklist, strategies strict, non-strategy relaxed, test imports only in test files, when in doubt reject.
-- **Key decisions:** Whitelist-only. Strategy files cannot make network calls or write files. ccxt allowed in strategies (read-only) but flagged for monitoring.
-- **Interface:** Input: source code string + is_strategy bool. Output: list of violations (empty = pass).
-- **Known issues:** pandas-ta module name not listed. ccxt in strategies technically risky. freqtrade.persistence allows DB access.
+R001|security,imports,whitelist,validation,strategy,python,guardrails|→L002,C001|←C001,C003,S001|Import whitelist — primary security boundary. STRICT (strategies): safe stdlib+numpy/pandas+talib+freqtrade+ccxt+pytest. RELAXED (non-strategy): +pathlib,json,csv,os,yaml,vectorbt,optuna,hypothesis. BLOCKED always: network, exec/eval, pickle, subprocess. AST-based validate_imports function. 5 rules.|d:whitelist-only; strategies no network/write; ccxt allowed but monitored|i:input: source code+is_strategy bool. Output: violations list (empty=pass)|!pandas-ta not listed. ccxt in strategies risky. freqtrade.persistence allows DB.
 
-### RULE-002
-- **Type:** RULE
-- **File:** rules/RULE-002_code-style-conventions.md
-- **Tags:** style, conventions, python, naming, formatting, freqtrade, code-generation
-- **Links:** CODE-001, LEARN-001
-- **Backlinks:** SPEC-001
-- **Summary:** Code style rules for all generated code. Python 3.10+, PEP 8, type hints on all signatures, Google-style docstrings. Naming: PascalCase classes, snake_case functions/variables/columns, UPPER_SNAKE constants, buy_/sell_ prefix for hyperopt params. DataFrame columns must include distinguishing parameter (ema_9 not ema). Import order: freqtrade → indicators → stdlib → logger. Strategy file structure order: docstring → imports → class → attributes → hyperopt → informative_pairs → populate_indicators → entry_trend → exit_trend → callbacks. Signal conditions: one condition per line with & operator. Comments: WHY not WHAT, economic thesis mandatory in class docstring.
-- **Key decisions:** Column naming includes period (ema_9 not ema). 120 char allowed for signal conditions (exception to PEP 8 79).
-- **Interface:** N/A (behavioral rule). Consumed by code generation pipeline.
-- **Known issues:** PEP 8 line length may be too restrictive for complex conditions.
+R002|style,conventions,python,naming,formatting,freqtrade,code-generation|→C001,L001|←S001|Code style for generated code. Python 3.10+, PEP 8, type hints, Google docstrings. Naming: PascalCase classes, snake_case funcs/vars/columns, UPPER_SNAKE constants, buy_/sell_ hyperopt prefix. DataFrame columns include period (ema_9 not ema). Import order: freqtrade→indicators→stdlib→logger. Signal conditions: one per line with &. Comments: WHY not WHAT, economic thesis in docstring.|d:column naming includes period; 120 char for signal conditions (PEP 8 exception)|!PEP 8 line length may be too restrictive for complex conditions.
 
-### RULE-003
-- **Type:** RULE
-- **File:** rules/RULE-003_testing-requirements.md
-- **Tags:** testing, requirements, pytest, validation, strategy, guardrails, pipeline
-- **Links:** CODE-002, CODE-001, LEARN-002
-- **Backlinks:** CODE-002, LEARN-008, LEARN-009, LEARN-010, SPEC-001
-- **Summary:** Mandatory testing and validation requirements. 3-stage pipeline: AST parse → import check (RULE-001) → pytest/dry-run. 7 mandatory tests per strategy (from CODE-002). Max 3 iteration rounds on failure. Error feedback loop: extract error → identify cause → fix specific issue → re-run. 30-second timeout per test. 512MB memory limit. Additional tests required when using informative pairs, custom callbacks, hyperopt parameters, or multiple timeframes.
-- **Key decisions:** Every task produces code AND tests. Max 3 fix rounds. 30s timeout, 512MB memory. AST parse before expensive tests.
-- **Interface:** Input: generated code. Output: pass/fail with error details.
-- **Known issues:** Freqtrade dry-run requires installation. Property tests optional. No live comparison test yet.
+R003|testing,requirements,pytest,validation,strategy,guardrails,pipeline|→C002,C001,L002|←C002,L008,L009,L010,S001|Mandatory validation: 3-stage pipeline (AST parse→import check R001→pytest/dry-run). 7 mandatory tests per strategy (CODE-002). Max 3 iteration rounds. Error feedback loop. 30s timeout, 512MB memory. Additional tests for informative pairs, custom callbacks, hyperopt, multi-TF.|d:every task produces code AND tests; max 3 fix rounds; 30s/512MB; AST before expensive tests|i:input: generated code. Output: pass/fail with error details|!freqtrade dry-run requires installation. Property tests optional. No live comparison.
 
 ---
 
 ## LEARN Files
 
-### LEARN-001
-- **Type:** LEARN
-- **File:** learnings/LEARN-001_freqtrade-istrategy-technical-reference.md
-- **Tags:** freqtrade, IStrategy, trading, python, callbacks, hyperopt, signals, indicators
-- **Links:** SPEC-001
-- **Backlinks:** CODE-001, CODE-002, CODE-003, LEARN-002, LEARN-003, LEARN-004, LEARN-005, LEARN-006, LEARN-007, LEARN-008, LEARN-009, LEARN-011, RULE-002, SPEC-001
-- **Summary:** Complete technical reference for Freqtrade's IStrategy interface. Covers: 3 required methods (populate_indicators/entry_trend/exit_trend) with exact signatures, DataFrame OHLCV columns, 15+ optional callback methods with full signatures (custom_stoploss, custom_exit, adjust_trade_position, leverage, etc.), parameter optimization interface (IntParameter/DecimalParameter/BooleanParameter/CategoricalParameter), signal column conventions, trailing stop mechanics, ROI table format, indicator libraries (TA-Lib, technical, pandas-ta), complete signal pattern example, and 10 code generation constraints.
-- **Key decisions:** Template-fill for IStrategy (fill only populate method bodies); hyperopt parameters cannot be used in populate_indicators; always include volume > 0 guard.
-- **Interface:** N/A (reference). Consumed by code generation pipeline.
-- **Known issues:** TA-Lib problematic on Windows. Freqtrade crypto-focused. startup_candle_count must be ≥200.
+L001|freqtrade,IStrategy,trading,python,callbacks,hyperopt,signals,indicators|→S001|←C001,C002,C003,L002,L003,L004,L005,L006,L007,L008,L009,L011,R002,S001 (14←hub)|Complete IStrategy technical reference. 3 required methods (populate_indicators/entry_trend/exit_trend), DataFrame OHLCV columns, 15+ optional callbacks (custom_stoploss, custom_exit, adjust_trade_position, leverage, etc.), parameter optimization (Int/Decimal/Bool/CategoricalParameter), signal conventions, trailing stop mechanics, ROI table, indicator libraries (TA-Lib, technical, pandas-ta), 10 code generation constraints.|d:template-fill for IStrategy; hyperopt params cannot be in populate_indicators; always volume>0 guard|!ta-lib Windows problematic. Freqtrade crypto-focused. startup_candle_count≥200.
 
-### LEARN-002
-- **Type:** LEARN
-- **File:** learnings/LEARN-002_llm-code-generation-patterns.md
-- **Tags:** code-generation, LLM, validation, security, sandbox, prompting, few-shot, SCoT, iteration
-- **Links:** SPEC-001, LEARN-001
-- **Backlinks:** RULE-001, RULE-003, SPEC-001
-- **Summary:** Quantitative research synthesis on LLM code generation for trading strategies. Prompting: SCoT +13.79% Pass@1, few-shot ~80% over zero-shot, prompt format varies 40%. Iteration: 3-5 rounds optimal, GPT-4o-mini 53%→75%, Gemini-flash 57%→89%. Validation: AST hallucination detection, Bandit security linting, smolagents LocalPythonExecutor (best fit for strategy validation), 4-tier sandbox hierarchy. Cross-project finding: LLM API hallucination is the consistent failure mode — every successful project required a validation layer. NexusTrade JSON-out pattern (24K users). Template-based generation recommended (eliminates structural errors).
-- **Key decisions:** Knowledge-first beats guess-and-check; template-fill eliminates largest error classes; whitelist imports never blacklist; smolagents as validation model; max 3-5 iterations.
-- **Interface:** N/A (research). Informs write + validation pipeline.
-- **Known issues:** Academic benchmarks may differ from real-world. smolagents HuggingFace-specific. All APIs point-in-time Feb 2026.
+L002|code-generation,LLM,validation,security,sandbox,prompting,few-shot,SCoT,iteration|→S001,L001|←R001,R003,S001|Quantitative research on LLM code generation for trading. SCoT +13.79% Pass@1, few-shot ~80% over zero-shot, prompt format varies 40%. Iteration 3-5 rounds optimal. Validation: AST hallucination detection, Bandit linting, smolagents LocalPythonExecutor. Cross-project: LLM API hallucination is consistent failure — every project needed validation layer. Template-based generation recommended.|d:knowledge-first>guess-and-check; template-fill eliminates largest error classes; whitelist>blacklist; max 3-5 iterations|!academic benchmarks may differ. smolagents HuggingFace-specific. Feb 2026 point-in-time.
 
-### LEARN-003
-- **Type:** LEARN
-- **File:** learnings/LEARN-003_freqtrade-bot-configuration.md
-- **Tags:** freqtrade, configuration, config-json, exchange, dry-run, stake, pairlist, fees, order-types
-- **Links:** LEARN-001, LEARN-004
-- **Backlinks:** LEARN-004, LEARN-011
-- **Summary:** Complete reference for Freqtrade's config.json structure. Covers: config loading and precedence (CLI > env vars > config > strategy), required parameters (max_open_trades, stake_currency, stake_amount, dry_run, minimal_roi, stoploss), exchange setup (ccxt_config, pair naming conventions, websocket), trading modes (spot/margin/futures with margin_mode), dry-run vs live differences (separate DBs, dry_run_wallet as float or dict), stake amount management (dynamic "unlimited" splitting, tradable_balance_ratio, available_capital), order types and pricing configuration (price_side "same"/"other", order book usage), and 9 documented gotchas (env var override, add_config_files precedence, Strategy Override one-way).
-- **Key decisions:** None — reference material. Config always overrides strategy (one-way). Market orders need price_side "other" for realistic backtesting.
-- **Interface:** N/A (reference). Consumed by config generation tasks.
-- **Known issues:** Coingecko rate limiting on some IPs. stoploss_on_exchange with wide stoploss may fail exchange limits.
+L003|freqtrade,configuration,config-json,exchange,dry-run,stake,pairlist,fees,order-types|→L001,L004|←L004,L011|Complete config.json reference. Loading precedence (CLI>env>config>strategy), required params, exchange setup (ccxt_config, pairs, websocket), trading modes (spot/margin/futures), dry-run vs live, stake management (dynamic "unlimited", tradable_balance_ratio), order types/pricing (price_side same/other), 9 gotchas.|d:none — reference. Config overrides strategy (one-way). Market orders need price_side "other" for backtesting|!coingecko rate limiting. stoploss_on_exchange may fail exchange limits.
 
-### LEARN-004
-- **Type:** LEARN
-- **File:** learnings/LEARN-004_freqtrade-bot-lifecycle.md
-- **Tags:** freqtrade, lifecycle, trading-loop, stoploss, trailing-stop, roi, callbacks, startup, shutdown
-- **Links:** LEARN-001, LEARN-003
-- **Backlinks:** LEARN-003
-- **Summary:** Documents Freqtrade bot startup sequence (8 steps), main trading loop (11 steps running every 5s), exit priority order (stoploss > ROI > exit signal > custom_exit > custom_stoploss), 4 trailing stoploss modes with examples (basic trailing, positive trailing, offset trailing, static-until-offset), stoploss on exchange mechanics (interval, limit ratio, emergency exit), ROI table format and special cases, complete callback table (18 callbacks with when/purpose), and critical backtesting vs live differences (populate_* called once per pair in backtest vs every iteration in live — #1 source of performance mismatch).
-- **Key decisions:** None — reference material. Mode 3 trailing (offset) recommended for locking profits.
-- **Interface:** N/A (reference). Consumed by strategy generation and testing tasks.
-- **Known issues:** Cannot change trailing stoploss on open trades if already adjusted. process_only_new_candles=false creates high load.
+L004|freqtrade,lifecycle,trading-loop,stoploss,trailing-stop,roi,callbacks,startup,shutdown|→L001,L003|←L003|Bot startup (8 steps), main loop (11 steps/5s), exit priority (stoploss>ROI>exit signal>custom_exit>custom_stoploss), 4 trailing modes with examples, stoploss on exchange mechanics, ROI table, 18 callbacks table, critical: populate_* called once/pair in backtest vs every iteration live (#1 performance mismatch).|d:none — reference. Mode 3 trailing (offset) recommended|!cannot change trailing on open trades if already adjusted. process_only_new_candles=false high load.
 
-### LEARN-005
-- **Type:** LEARN
-- **File:** learnings/LEARN-005_freqtrade-data-handling.md
-- **Tags:** freqtrade, data, download, timeframes, pairlist, informative-pairs, merge, startup-candle-count, lookahead
-- **Links:** LEARN-001, LEARN-006
-- **Backlinks:** LEARN-006
-- **Summary:** Reference for Freqtrade data pipeline. Covers: download-data command (incremental downloads, pairs regex, timeframe options), 4 supported formats (json/jsongz/feather/parquet — feather is default, hdf5 removed), pair list config (StaticPairList vs VolumePairList, chaining), informative pairs (informative_pairs() method, dp.get_pair_dataframe(), merge_informative_pair() mechanics — timestamp alignment, forward-fill, column renaming with TF suffix), data directory structure (underscore naming), startup_candle_count (why needed, multi-TF calculation formula: indicator_period * TF_ratio, recursive-analysis validation), and lookahead bias prevention (shift(1), vectorized ops only, detection commands).
-- **Key decisions:** None — reference. Use StaticPairList for reproducible backtests. startup_candle_count = 2x-4x longest indicator period.
-- **Interface:** N/A (reference). Consumed by data pipeline and strategy generation tasks.
-- **Known issues:** VolumePairList not reproducible for backtesting. Exchange candle limits in live may differ from backtest.
+L005|freqtrade,data,download,timeframes,pairlist,informative-pairs,merge,startup-candle-count,lookahead|→L001,L006|←L006|Data pipeline reference. download-data command, 4 formats (json/jsongz/feather/parquet — feather default), pair list config (Static vs Volume, chaining), informative pairs (method, dp.get_pair_dataframe, merge_informative_pair mechanics), startup_candle_count (multi-TF formula: indicator_period×TF_ratio), lookahead bias prevention (shift(1), vectorized only, detection commands).|d:none — reference. StaticPairList for reproducible backtests. startup_candle_count=2x-4x longest indicator|!VolumePairList not reproducible. Exchange candle limits may differ live.
 
-### LEARN-006
-- **Type:** LEARN
-- **File:** learnings/LEARN-006_freqtrade-backtesting-cli.md
-- **Tags:** freqtrade, backtesting, cli, timerange, results, metrics, export, pitfalls
-- **Links:** LEARN-001, LEARN-005
-- **Backlinks:** LEARN-005, LEARN-009
-- **Summary:** Complete backtesting CLI reference. Covers: all key parameters (--strategy, --strategy-list, --timerange, --timeframe-detail, --export, --fee, --cache, --breakdown), timerange format (YYYYMMDD-YYYYMMDD, open-ended), --timeframe-detail for intra-candle simulation (exits/callbacks at detail TF), result metrics (profit factor, SQN, Sortino, Sharpe, Calmar, expectancy, drawdown), result interpretation guidelines (good signs: PF>1.5, SQN>2.0; red flags: >80% win rate with few trades), export and analysis workflow, 7 backtesting assumptions/limitations (no slippage, no order book, flat fees, full dataset at once), and 7 common pitfalls (lookahead bias, insufficient startup candles, overfitting, VolumePairList, rejected signals).
-- **Key decisions:** None — reference. Always run lookahead-analysis and recursive-analysis before going live.
-- **Interface:** N/A (reference). Consumed by backtesting tasks.
-- **Known issues:** Results may differ between Freqtrade versions. Cache auto-disabled for open-ended timeranges.
+L006|freqtrade,backtesting,cli,timerange,results,metrics,export,pitfalls|→L001,L005|←L005,L009|Complete backtesting CLI reference. Parameters (--strategy, --timerange, --timeframe-detail, --export, --fee), result metrics (PF, SQN, Sortino, Sharpe, Calmar, expectancy, drawdown), interpretation (good: PF>1.5, SQN>2.0; red flags: >80% win rate few trades), 7 assumptions/limitations, 7 pitfalls (lookahead, startup candles, overfitting).|d:none — reference. Always run lookahead-analysis and recursive-analysis before live|!results may differ between FT versions. Cache auto-disabled open-ended timeranges.
 
-### LEARN-007
-- **Type:** LEARN
-- **File:** learnings/LEARN-007_talib-indicator-reference.md
-- **Tags:** ta-lib, indicators, technical-analysis, freqtrade, qtpylib, technical-library, python
-- **Links:** LEARN-001
-- **Backlinks:** CODE-001, CODE-003
-- **Summary:** Complete ta-lib indicator reference for Freqtrade strategy generation. Covers: Abstract API vs Function API (Abstract preferred — auto-selects price inputs), Freqtrade column assignment pattern (single-output direct assign, multi-output unpack), 8 overlap studies (SMA/EMA/DEMA/TEMA/WMA/BBANDS/SAR/HT_TRENDLINE with signatures/defaults), 12 momentum indicators (RSI/MACD/STOCH/STOCHRSI/CCI/ADX/PLUS_DI/MINUS_DI/WILLR/MOM/ROC/MFI), 3 volume indicators (AD/ADOSC/OBV), 3 volatility indicators (ATR/NATR/TRANGE), top 10 candlestick patterns (CDL* functions returning integers 100/-100/0), qtpylib helpers (bollinger_bands, typical_price, heikinashi, crossed_above/below — critical for signals), `technical` library indicators (ichimoku, VWAP, hull MA, SSL channel), and 6 gotchas (NaN propagation, startup_candle_count 2x-4x rule, integer CDL returns, Abstract API auto-selection, STOCHRSI range, performance — never row-by-row).
-- **Key decisions:** None — reference. Always use Abstract API in strategies. Compute ALL indicators in populate_indicators(), never in populate_entry/exit_trend().
-- **Interface:** N/A (reference). Primary indicator lookup for code generation.
-- **Known issues:** ta-lib Windows installation needs pre-built binaries. BBANDS default timeperiod=5 is unusually short (use 20). SAR whipsaws in sideways markets.
+L007|ta-lib,indicators,technical-analysis,freqtrade,qtpylib,technical-library,python|→L001|←C001,C003|Complete ta-lib indicator reference. Abstract vs Function API (Abstract preferred). 8 overlap (SMA/EMA/DEMA/TEMA/WMA/BBANDS/SAR/HT_TRENDLINE), 12 momentum (RSI/MACD/STOCH/STOCHRSI/CCI/ADX/PLUS_DI/MINUS_DI/WILLR/MOM/ROC/MFI), 3 volume, 3 volatility, top 10 candlestick patterns, qtpylib helpers (crossed_above/below critical), technical library (ichimoku/VWAP/hull/SSL), 6 gotchas.|d:none — reference. Always Abstract API. ALL indicators in populate_indicators(), never entry/exit_trend|!ta-lib Windows needs pre-built binaries. BBANDS default 5 (use 20). SAR whipsaws sideways.
 
-### LEARN-008
-- **Type:** LEARN
-- **File:** learnings/LEARN-008_vectorbt-backtesting-engine-reference.md
-- **Tags:** vectorbt, backtesting, vectorized, trading, indicators, portfolio, parameter-optimization, signal-generation, prover
-- **Links:** LEARN-001, SPEC-001, RULE-003
-- **Backlinks:** _(none)_
-- **Summary:** Comprehensive VectorBT reference for the two-phase pipeline (VectorBT screening → Freqtrade validation). Covers: vectorized vs event-driven comparison, signal generation (MA crossovers, RSI, combining with &/|, SignalFactory chain mode), Portfolio.from_signals() full parameter reference (size_type 4 options, direction 3 options, sl_stop/tp_stop/ts_stop, fees/slippage), all built-in indicators with signatures (MA, RSI, BBANDS, MACD, ATR, STOCH, OBV), IndicatorFactory for custom indicators, run_combs() for parameter arrays (4851 combos from 99 windows), results analysis (stats, trades, Sharpe, heatmaps), parameter optimization workflow (idxmax for best params), data handling (YFData, CCXTData), VectorBT-to-Freqtrade signal conversion (boolean → DataFrame .loc[]), performance tips (Numba @njit, avoid pandas in Numba), PRO vs open-source feature table.
-- **Key decisions:** Open-source VectorBT sufficient for Phase 1 screening. Signal conversion is manual. CPCV likely requires external library.
-- **Interface:** N/A (reference)
-- **Known issues:** No automated signal-to-Freqtrade converter. CPCV not native. PRO scope unclear (paywall).
+L008|vectorbt,backtesting,vectorized,trading,indicators,portfolio,parameter-optimization,signal-generation,prover|→L001,S001,R003|←∅|VectorBT reference for two-phase pipeline (VectorBT screening→Freqtrade validation). Signal generation, Portfolio.from_signals() (size_type/direction/stops/fees), built-in indicators, IndicatorFactory, run_combs() (4851 combos from 99 windows), results analysis (stats/trades/Sharpe/heatmaps), data handling (YFData/CCXTData), VectorBT→Freqtrade signal conversion, Numba tips, PRO vs open-source.|d:open-source sufficient Phase 1; signal conversion manual; CPCV needs external lib|!no automated signal-to-FT converter. CPCV not native. PRO scope unclear.
 
-### LEARN-009
-- **Type:** LEARN
-- **File:** learnings/LEARN-009_optuna-hyperparameter-optimization.md
-- **Tags:** optuna, hyperparameter, optimization, bayesian, TPE, pruning, freqtrade, trading
-- **Links:** LEARN-001, LEARN-006, SPEC-001, RULE-003
-- **Backlinks:** _(none)_
-- **Summary:** Complete Optuna reference for strategy optimization. Covers: core concepts (study/trial/objective), Trial suggest API (suggest_int/float/categorical with step/log/conditional params, enqueue_trial), 8 samplers compared (TPESampler default, CmaEsSampler for continuous, NSGAIIISampler = Freqtrade default, AutoSampler), 6 pruners (MedianPruner recommended default with n_startup_trials/n_warmup_steps), storage options (SQLite single-process, PostgreSQL/JournalFileBackend for parallel), visualization (10 plot types), Freqtrade hyperopt integration (CLI, loss functions, strategy Parameter types, standalone vs built-in comparison table), best practices (10x params minimum trials, timeout safety, multi-objective Pareto), 6 common pitfalls (search space too wide, step/log conflict, SQLite concurrency, overfitting).
-- **Key decisions:** Freqtrade hyperopt for quick sweeps, standalone Optuna for pruning/walk-forward/persistence. TPESampler with seed for reproducibility.
-- **Interface:** N/A (reference)
-- **Known issues:** Freqtrade hyperopt doesn't expose pruning. Walk-forward requires custom objective.
+L009|optuna,hyperparameter,optimization,bayesian,TPE,pruning,freqtrade,trading|→L001,L006,S001,R003|←∅|Complete Optuna reference. Core concepts, Trial suggest API, 8 samplers (TPE default, CmaEs continuous, NSGAIII=FT default, Auto), 6 pruners (MedianPruner recommended), storage (SQLite/PostgreSQL/JournalFile), 10 plot types, FT hyperopt integration (CLI, loss functions, standalone vs built-in table), best practices (10x params trials), 6 pitfalls.|d:FT hyperopt for quick sweeps, standalone Optuna for pruning/walk-forward; TPESampler with seed|!FT hyperopt no pruning. Walk-forward needs custom objective.
 
-### LEARN-010
-- **Type:** LEARN
-- **File:** learnings/LEARN-010_pytest-advanced-patterns.md
-- **Tags:** pytest, testing, fixtures, parametrize, mocking, hypothesis, property-testing, benchmark, dataframe
-- **Links:** CODE-002, RULE-003, SPEC-001
-- **Backlinks:** _(none)_
-- **Summary:** Advanced pytest patterns extending CODE-002 scaffolding. Covers: fixtures (5 scopes, autouse, parametrized fixtures, fixture factories with cleanup, request.param), parametrize (basic, IDs, stacking for combinations, indirect to fixtures, marks on params), mocking (monkeypatch for env/config, MagicMock with spec/side_effect, patch decorator/context, when-to-use comparison table), markers (skip/skipif/xfail, custom registration in pyproject.toml, -m filtering), conftest hierarchy patterns (plugin hooks, pytest_addoption, shared fixtures), property-based testing with Hypothesis (@given, core strategies, hypothesis.extra.pandas for OHLCV DataFrames with assume() for constraints, settings/example), pytest-benchmark (basic, pedantic mode, CLI options), DataFrame testing patterns (schema assertions, pytest.approx with rel/abs/nan_ok, pd.testing.assert_frame_equal, NaN propagation testing).
-- **Key decisions:** monkeypatch for simple replacements, unittest.mock for call tracking. Hypothesis adds ~10s per DataFrame test.
-- **Interface:** N/A (reference)
-- **Known issues:** Hypothesis + pytest-benchmark don't compose well. hypothesis.extra.pandas doesn't enforce OHLC constraints.
+L010|pytest,testing,fixtures,parametrize,mocking,hypothesis,property-testing,benchmark,dataframe|→C002,R003,S001|←∅|Advanced pytest extending CODE-002. Fixtures (5 scopes, autouse, factories), parametrize (stacking, indirect, marks), mocking (monkeypatch vs MagicMock comparison), markers (skip/xfail, custom), conftest hierarchy, Hypothesis (@given, hypothesis.extra.pandas for OHLCV), pytest-benchmark (pedantic mode), DataFrame testing (schema, approx, NaN propagation).|d:monkeypatch for simple, unittest.mock for call tracking; Hypothesis +~10s/DataFrame test|!Hypothesis+benchmark don't compose. hypothesis.extra.pandas no OHLC constraints.
 
-### LEARN-011
-- **Type:** LEARN
-- **File:** learnings/LEARN-011_ccxt-unified-api-reference.md
-- **Tags:** ccxt, exchange-api, trading, unified-api, freqtrade, python, market-data, orders, error-handling, async
-- **Links:** LEARN-001, LEARN-003, SPEC-001
-- **Backlinks:** _(none)_
-- **Summary:** Comprehensive CCXT reference for the Coder brain. Covers: exchange instantiation (sync/async, all config options, sandbox/testnet, load_markets), market structure (symbol format for spot/futures/options, market object fields, precision vs limits), public API (fetchTicker, fetchOrderBook, fetchOHLCV with return structures, timeframe strings, pagination for historical data, timestamp helpers), private API (fetchBalance, createOrder with market/limit/stop/TP/SL examples, derivatives leverage/margin, order lifecycle, order management), async vs sync (when to use, multi-exchange pattern, 3 pitfalls), error handling (full exception hierarchy, retry pattern with backoff, retryability table — NetworkError=retry, ExchangeError=don't), exchange quirks (Binance/Bybit/OKX/Kraken comparison table, specific gotchas per exchange), Freqtrade integration (what FT handles vs strategy author, DataProvider not raw CCXT, signal columns, exchange config JSON), common recipes (OHLCV-to-pandas, market filtering), 10 key gotchas.
-- **Key decisions:** Sync for Freqtrade strategies (FT handles async). Implement own retry logic (CCXT internal retry broken). triggerPrice/stopLossPrice/takeProfitPrice as unified stop/TP params.
-- **Interface:** N/A (reference)
-- **Known issues:** CCXT v4.x point-in-time Feb 2026. Fee info "experimental". Binance testnet URLs changed 2025.
+L011|ccxt,exchange-api,trading,unified-api,freqtrade,python,market-data,orders,error-handling,async|→L001,L003,S001|←∅|Comprehensive CCXT reference. Exchange instantiation (sync/async, sandbox), market structure (symbol format, precision vs limits), public API (fetchTicker/OrderBook/OHLCV, pagination, timestamps), private API (balance, createOrder market/limit/stop/TP/SL, derivatives, order management), async vs sync (3 pitfalls), error handling (exception hierarchy, retry with backoff, retryability table), exchange quirks (Binance/Bybit/OKX/Kraken table), FT integration, 10 gotchas.|d:sync for FT strategies; implement own retry (CCXT internal broken); triggerPrice/stopLossPrice/takeProfitPrice unified|!CCXT v4.x Feb 2026. Fee info "experimental". Binance testnet URLs changed 2025.
 
 ---
 
 ## LOG Files
 
-### LOG-002
-- **Type:** LOG
-- **File:** logs/LOG-002_project-timeline.md
-- **Tags:** timeline, decisions, sessions, changelog
-- **Links:** _(none)_
-- **Backlinks:** _(none)_
-- **Summary:** Chronological project timeline. Append-only log of all sessions, key actions, files created/modified, and decisions made. Every session must append an entry before ending.
-- **Key decisions:** N/A — log file.
-- **Interface:** Append-only. Use entry format template inside file.
-- **Known issues:** None.
+G002|timeline,decisions,sessions,changelog|→S001|←S001|Chronological project timeline. Append-only log of all sessions, key actions, files created/modified, decisions made.|i:append-only, use entry format template|!none
 
 ---
 
